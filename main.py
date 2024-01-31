@@ -50,11 +50,7 @@ extract_tar_gz(tar_gz_file_path, extract_folder)
 
 
 # ------------------------- PREPROCESSING DATA -------------------------
-def preprocess_text(text, apply_case_transform=True, lemmatize=True, generate_ngrams=False, n=3):
-    # Transform case
-    if apply_case_transform:
-        text = text.lower()
-
+def preprocess_text(text, generate_ngrams=False, apply_case_transform=True, lemmatize=True, n=3):
     # Tokenization
     tokens = word_tokenize(text)
 
@@ -62,25 +58,27 @@ def preprocess_text(text, apply_case_transform=True, lemmatize=True, generate_ng
     stop_words = set(stopwords.words('english'))
     tokens = [word for word in tokens if word.lower() not in stop_words]
 
-    # Lemmatization
-    if lemmatize:
-        lemmatizer = WordNetLemmatizer()
-        tokens = [lemmatizer.lemmatize(word) for word in tokens]
+    # Generate n-grams
+    if generate_ngrams:
+        n_grams = list(ngrams(tokens, n))
+        # Combine tokens and n-grams
+        tokens = tokens + [' '.join(gram) for gram in n_grams]
 
     # Stemming
     stemmer = PorterStemmer()
     tokens = [stemmer.stem(word) for word in tokens]
 
-    # Generate n-grams
-    if generate_ngrams:
-        n_grams = list(ngrams(tokens, n))
-        # Combine tokens and n-grams
-        all_tokens = tokens + [' '.join(gram) for gram in n_grams]
-    else:
-        all_tokens = tokens
+    # Transform case
+    if apply_case_transform:
+        tokens = [word.lower() for word in tokens]
+
+    # Lemmatization
+    if lemmatize:
+        lemmatizer = WordNetLemmatizer()
+        tokens = [lemmatizer.lemmatize(word) for word in tokens]
 
     # Reconstruct the preprocessed text
-    preprocessed_text = ' '.join(all_tokens)
+    preprocessed_text = ' '.join(tokens)
 
     return preprocessed_text
 
